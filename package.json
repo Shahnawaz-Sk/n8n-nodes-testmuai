@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-testmuai",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "n8n verified community node for TestMu AI (Formerly LambdaTest). Gives an AI Agent native browser tools — navigate, click, type, extract — running on TestMu's real cross-browser cloud infrastructure via the W3C WebDriver protocol.",
   "keywords": [
     "n8n-community-node-package",

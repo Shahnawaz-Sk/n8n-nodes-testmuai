@@ -229,15 +229,15 @@ export class TestmuaiAgent implements INodeType {
 				default: '={{ $fromAI("url", "Absolute URL to open. Used when action=navigate; ignored otherwise.", "string") }}',
 				placeholder: 'https://example.com',
 				description: 'Filled by the AI when action=navigate',
-				displayOptions: { show: { action: ['navigate'] } },
 			},
 			{
 				displayName: 'Ref',
 				name: 'ref',
 				type: 'number',
-				default: 0,
+				// eslint-disable-next-line n8n-nodes-base/node-param-default-wrong-for-number -- the default is an $fromAI() expression so the field reaches the tool schema; n8n resolves it to a number at runtime
+				default:
+					'={{ $fromAI("ref", "Ref number of the target element, taken from the most recent snapshot output. Required for click and type; optional for get_text. Run snapshot first to obtain refs.", "number", 0) }}',
 				description: 'Filled by the AI for click, type, and (optionally) get_text. Refs come from the latest snapshot.',
-				displayOptions: { show: { action: ['click', 'type', 'get_text'] } },
 			},
 			{
 				displayName: 'Text',
@@ -245,31 +245,31 @@ export class TestmuaiAgent implements INodeType {
 				type: 'string',
 				default: '={{ $fromAI("text", "Text to type into the input element. Used when action=type.", "string") }}',
 				description: 'Filled by the AI when action=type',
-				displayOptions: { show: { action: ['type'] } },
 			},
 			{
 				displayName: 'Press Enter After Typing',
 				name: 'submit',
 				type: 'boolean',
-				default: false,
+				// eslint-disable-next-line n8n-nodes-base/node-param-default-wrong-for-boolean -- the default is an $fromAI() expression so the field reaches the tool schema; n8n resolves it to a boolean at runtime
+				default:
+					'={{ $fromAI("submit", "Whether to press Enter after typing, e.g. to submit a search form. Used when action=type.", "boolean", false) }}',
 				description: 'Whether to press Enter after typing (e.g. to submit a search). Filled by the AI when action=type.',
-				displayOptions: { show: { action: ['type'] } },
 			},
 			{
 				displayName: 'Max Text Length',
 				name: 'maxLength',
 				type: 'number',
 				default: 4000,
-				description: 'Truncate get_text result to this many characters',
-				displayOptions: { show: { action: ['get_text'] } },
+				description: 'Truncate get_text result to this many characters. User setting; not filled by the AI.',
 			},
 			{
 				displayName: 'Full Page Screenshot',
 				name: 'fullPage',
 				type: 'boolean',
-				default: false,
+				// eslint-disable-next-line n8n-nodes-base/node-param-default-wrong-for-boolean -- the default is an $fromAI() expression so the field reaches the tool schema; n8n resolves it to a boolean at runtime
+				default:
+					'={{ $fromAI("fullPage", "Whether to capture the entire scrollable page instead of just the viewport. Used when action=screenshot.", "boolean", false) }}',
 				description: 'Whether to capture the entire scrollable page (true) or just the viewport (false). Filled by the AI when action=screenshot.',
-				displayOptions: { show: { action: ['screenshot'] } },
 			},
 		],
 	};
@@ -587,7 +587,9 @@ async function refreshSnapshot(ctx: IExecuteFunctions, session: StoredSession): 
 
 function requireRef(session: StoredSession, ref: number): SnapshotItem {
 	if (!Number.isInteger(ref) || ref < 1) {
-		throw new ApplicationError(`Ref must be a positive integer, got ${ref}`);
+		throw new ApplicationError(
+			`Ref must be a positive integer, got ${ref}. Run the snapshot action first and use a ref number from its output.`,
+		);
 	}
 	const target = session.refs.find((r) => r.ref === ref);
 	if (!target) {
